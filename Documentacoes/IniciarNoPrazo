@@ -1,0 +1,19 @@
+Comando para iniciar o projeto
+
+Backend
+
+python -m venv venv
+source venv/bin/activate        # Linux/Mac
+venv\Scripts\activate           # Windows
+
+pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv alembic
+pip freeze > requirements.txt
+
+uvicorn app.main:app --reload
+
+
+FrontEnd
+cd no-prazo
+npm install @supabase/supabase-js @supabase/ssr
+npm run dev
+
