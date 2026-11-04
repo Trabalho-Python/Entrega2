@@ -35,6 +35,11 @@ Edite `help_desk/.env` e informe os dados reais da conexão. Exemplo de formato:
 ```env
 DATABASE_URL=postgresql://USUARIO:SENHA@HOST:5432/NOME_DO_BANCO
 CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+DB_POOL_SIZE=5
+DB_MAX_OVERFLOW=2
+DB_POOL_TIMEOUT=10
+DB_POOL_RECYCLE=1800
+DB_CONNECT_TIMEOUT=10
 ```
 
 Não compartilhe nem versione o arquivo `.env`. Com a configuração pronta, inicie a API:
@@ -45,7 +50,18 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 
 O backend adapta essa URL para o driver `psycopg2` listado em `requirements.txt`.
 
+Para Supabase em produção, prefira a connection string do **pooler** compatível
+com a forma de execução da API e mantenha SSL habilitado (`sslmode=require` na
+URL quando necessário). Codifique caracteres especiais da senha na URL. O pool
+é mantido por processo: o máximo de conexões da aplicação é
+`(DB_POOL_SIZE + DB_MAX_OVERFLOW) × número de processos`; ajuste os valores ao
+limite do projeto Supabase e à quantidade de workers. Os padrões acima permitem
+até 7 conexões por processo, fazem ping antes de reutilizar conexões e limitam
+esperas e conexões lentas.
+
 Confira se o backend está ativo abrindo `http://127.0.0.1:8000/health` — a resposta esperada é `{"status":"ok"}`. A documentação interativa dos endpoints fica em `http://127.0.0.1:8000/docs`.
+O endpoint `/readyz` também verifica a conexão com o banco e retorna HTTP 503
+quando o PostgreSQL não está acessível.
 
 ## 3. Configurar e iniciar o frontend
 

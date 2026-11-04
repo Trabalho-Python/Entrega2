@@ -1,5 +1,7 @@
 import uuid
+from datetime import datetime, timedelta, timezone
 
+from sqlalchemy import case, func
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.categoria import Categoria
@@ -7,7 +9,6 @@ from app.models.chamado import Chamado
 from app.models.usuario import Usuario
 from app.schemas.chamado import ChamadoCreate
 from app.services.sla_calculator import calcular_prazo_sla
-from app.services.sla_status import sla_esta_em_risco, sla_esta_vencido
 
 
 def _query_chamados(db: Session):
@@ -71,23 +72,35 @@ def calcular_e_salvar_sla(db: Session, chamado_id: uuid.UUID) -> Chamado | None:
 
 
 def resumo_chamados(db: Session) -> dict[str, int]:
-    chamados = listar_chamados(db)
-    atrasados = 0
-    em_risco = 0
-    abertos = 0
-    em_andamento = 0
+    agora = datetime.now(timezone.utc)
+    limite_risco = agora + timedelta(hours=2)
+    total, abertos, em_andamento, atrasados, em_risco = db.query(
+        func.count(Chamado.id),
+        func.coalesce(func.sum(case((Chamado.status == "aberto", 1), else_=0)), 0),
+        func.coalesce(
+            func.sum(case((Chamado.status == "em_andamento", 1), else_=0)), 0
+        ),
+        func.coalesce(
+            func.sum(case((Chamado.prazo_sla < agora, 1), else_=0)), 0
+        ),
+        func.coalesce(
+            func.sum(
+                case(
+                    (
+                        (Chamado.prazo_sla >= agora)
+                        & (Chamado.prazo_sla <= limite_risco),
+                        1,
+                    ),
+                    else_=0,
+                )
+            ),
+            0,
+        ),
+    ).one()
 
-    for chamado in chamados:
-        if chamado.status == "aberto":
-            abertos += 1
-        if chamado.status == "em_andamento":
-            em_andamento += 1
-        if sla_esta_vencido(chamado.prazo_sla):
-            atrasados += 1
-        elif sla_esta_em_risco(chamado.prazo_sla):
-            em_risco += 1
-
-    total = len(chamados)
+    total, abertos, em_andamento, atrasados, em_risco = map(
+        int, (total, abertos, em_andamento, atrasados, em_risco)
+    )
     return {
         "total": total,
         "abertos": abertos,

@@ -27,3 +27,20 @@ CORS_ORIGINS = [
     for origin in os.getenv("CORS_ORIGINS", _DEFAULT_CORS).split(",")
     if origin.strip()
 ]
+
+
+def _positive_int(name: str, default: int, *, allow_zero: bool = False) -> int:
+    value = int(os.getenv(name, str(default)))
+    minimum = 0 if allow_zero else 1
+    if value < minimum:
+        raise ValueError(f"{name} deve ser maior ou igual a {minimum}.")
+    return value
+
+
+# Defaults deliberadamente conservadores: cada processo da API mantém seu
+# próprio pool, então o total máximo é (pool_size + max_overflow) * workers.
+DB_POOL_SIZE = _positive_int("DB_POOL_SIZE", 5)
+DB_MAX_OVERFLOW = _positive_int("DB_MAX_OVERFLOW", 2, allow_zero=True)
+DB_POOL_TIMEOUT = _positive_int("DB_POOL_TIMEOUT", 10)
+DB_POOL_RECYCLE = _positive_int("DB_POOL_RECYCLE", 1800)
+DB_CONNECT_TIMEOUT = _positive_int("DB_CONNECT_TIMEOUT", 10)
