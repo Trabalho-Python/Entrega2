@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>NoPrazo - Fila de chamados</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0b0d10}
+*{box-sizing:border-box}
+a{color:#8ab4ff}
+.nav-item{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:14px;color:#b6bcc5;text-decoration:none;font-size:14.5px;background:transparent}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.12);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.row:hover{background:rgba(255,255,255,.045) !important}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #8ab4ff;outline-offset:2px}
+::placeholder{color:#8a919b}
+</style>
+</helmet>
+<div style="position:relative; min-height:900px; overflow:hidden; background:#0b0d10; color:#eceef1; font-family:'Inter',system-ui,sans-serif; font-size:14px; line-height:1.45">
+
+<div aria-hidden="true" style="position:absolute; inset:0; background:radial-gradient(640px 260px at 12% 0%, rgba(240,182,106,.22), transparent 70%), radial-gradient(720px 300px at 78% 0%, rgba(110,150,230,.22), transparent 70%)"></div>
+
+<div style="position:relative; display:flex; flex-direction:column; padding:16px; min-height:900px">
+
+<nav aria-label="Principal" style="display:flex; flex-wrap:wrap; align-items:center; gap:8px 24px; padding:10px 14px 10px 22px; border-radius:24px; background:linear-gradient(160deg, rgba(255,255,255,.11), rgba(255,255,255,.04)); backdrop-filter:blur(28px) saturate(180%); -webkit-backdrop-filter:blur(28px) saturate(180%); border:1px solid rgba(255,255,255,.12); box-shadow:inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,255,255,.05), 0 20px 50px rgba(0,0,0,.45)">
+  <a href="Main.dc.html" style="display:flex; align-items:center; gap:10px; color:#ffffff; text-decoration:none; font-weight:600; font-size:17px; letter-spacing:-0.01em">
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+    NoPrazo
+  </a>
+  <div style="display:flex; flex-wrap:wrap; align-items:center; gap:4px; flex:1 1 auto">
+    <a class="nav-item" href="Novo.dc.html">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
+      Abrir chamado
+    </a>
+    <a class="nav-item" href="#">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"></rect><path d="M9 8h6M9 12h6M9 16h3"></path></svg>
+      Meus chamados
+    </a>
+    <span aria-hidden="true" style="width:1px; height:24px; margin:0 10px; background:rgba(255,255,255,.14)"></span>
+    <a class="nav-item active" href="Main.dc.html" aria-current="page">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2-8h12l2 8v6H4z"></path><path d="M4 13h5l1 2h4l1-2h5"></path></svg>
+      Fila de chamados
+      <span style="font-size:13px; color:#b6bcc5; font-variant-numeric:tabular-nums">{{openCount}}</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      Prazos (SLA)
+    </a>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px; padding-left:20px; border-left:1px solid rgba(255,255,255,.10)">
+    <span aria-hidden="true" style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.12); font-size:13px; font-weight:600">SR</span>
+    <span style="display:flex; flex-direction:column">
+      <span style="font-size:14px; font-weight:500">Samuel R.</span>
+      <span style="font-size:12.5px; color:#8a919b">Resolvedor</span>
+    </span>
+    <a href="#" aria-label="Sair" style="display:flex; align-items:center; justify-content:center; width:44px; height:44px; color:#b6bcc5">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4"></path><path d="M15 8l4 4-4 4M19 12H9"></path></svg>
+    </a>
+  </div>
+</nav>
+
+<main style="flex:1 1 auto; min-width:0; padding:32px 16px 24px 16px; display:flex; flex-direction:column">
+
+  <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:16px; padding-bottom:20px">
+    <div>
+      <h1 style="margin:0; font-size:28px; font-weight:600; letter-spacing:-0.02em">Fila de chamados</h1>
+      <p style="margin:4px 0 0; color:#b6bcc5">{{summary}}</p>
+    </div>
+    <input type="search" aria-label="Buscar chamados" placeholder="Buscar por título, ID ou pessoa" onInput="{{onSearch}}" style="width:300px; max-width:100%; height:44px; padding:0 14px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:#eceef1; font:inherit">
+  </div>
+
+  <div role="tablist" style="display:flex; flex-wrap:wrap; border-bottom:1px solid rgba(255,255,255,.09)">
+    <sc-for list="{{tabs}}" as="tab" hint-placeholder-count="3">
+      <button type="button" role="tab" aria-selected="{{tab.active}}" onClick="{{tab.pick}}" style="min-height:44px; margin:0 24px -1px 0; padding:0 2px; background:none; border:0; border-bottom:2px solid {{tab.border}}; color:{{tab.color}}; font:inherit; font-size:14px; font-weight:500; cursor:pointer">
+        {{tab.label}} <span style="margin-left:6px; color:#8a919b; font-variant-numeric:tabular-nums">{{tab.count}}</span>
+      </button>
+    </sc-for>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; align-items:flex-start; flex:1">
+
+    <section aria-label="Lista de chamados" style="flex:999 1 600px; min-width:0">
+      <div style="display:grid; grid-template-columns:72px minmax(0,1fr) 132px 124px; column-gap:16px; padding:14px 12px 10px; font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:#8a919b; border-bottom:1px solid rgba(255,255,255,.09)">
+        <span>Prioridade</span><span>Chamado</span><span>Status</span><span>Prazo</span>
+      </div>
+      <sc-for list="{{rows}}" as="t" hint-placeholder-count="7">
+        <button type="button" class="row" aria-pressed="{{t.selected}}" onClick="{{t.pick}}" style="display:grid; grid-template-columns:72px minmax(0,1fr) 132px 124px; column-gap:16px; align-items:center; width:100%; margin:0; padding:14px 12px; text-align:left; border:0; border-bottom:1px solid rgba(255,255,255,.07); background:{{t.bg}}; color:inherit; font:inherit; cursor:pointer">
+          <span style="font-size:13px; color:{{t.prioColor}}">{{t.prio}}</span>
+          <span style="display:flex; flex-direction:column; gap:3px; min-width:0">
+            <span style="font-size:14.5px; font-weight:{{t.weight}}; color:#eceef1">{{t.title}}</span>
+            <span style="font-size:12.5px; color:#8a919b">{{t.sub}}</span>
+          </span>
+          <span style="display:flex; align-items:center; gap:8px; font-size:13px; color:#b6bcc5">
+            <span aria-hidden="true" style="flex:none; width:9px; height:9px; border-radius:50%; background:{{t.dotBg}}; border:1.5px solid {{t.dotBorder}}"></span>
+            {{t.statusLabel}}
+          </span>
+          <span style="display:flex; flex-direction:column; gap:6px">
+            <span style="font-size:13px; color:{{t.slaColor}}; font-variant-numeric:tabular-nums">{{t.slaLabel}}</span>
+            <span aria-hidden="true" style="display:block; height:3px; border-radius:2px; background:rgba(255,255,255,.10)"><span style="display:block; height:3px; border-radius:2px; width:{{t.barW}}; background:{{t.slaColor}}"></span></span>
+          </span>
+        </button>
+      </sc-for>
+      <sc-if value="{{hasNone}}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0; padding:40px 12px; color:#8a919b">Nenhum chamado nesta visão.</p>
+      </sc-if>
+    </section>
+
+    <aside aria-label="Detalhe do chamado" style="flex:1 1 360px; min-width:320px; margin-top:0; padding:20px 0 0 28px; border-left:1px solid rgba(255,255,255,.09); align-self:stretch">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+        <span style="font-size:13px; color:#8a919b; font-variant-numeric:tabular-nums">{{d.id}}</span>
+        <span style="display:flex; align-items:center; gap:8px; font-size:13px; color:#b6bcc5">
+          <span aria-hidden="true" style="width:9px; height:9px; border-radius:50%; background:{{d.dotBg}}; border:1.5px solid {{d.dotBorder}}"></span>{{d.statusLabel}}
+        </span>
+      </div>
+      <h2 style="margin:10px 0 20px; font-size:20px; font-weight:600; letter-spacing:-0.01em; line-height:1.3">{{d.title}}</h2>
+
+      <dl style="margin:0; display:flex; flex-direction:column">
+        <sc-for list="{{d.fields}}" as="f" hint-placeholder-count="6">
+          <div style="display:grid; grid-template-columns:110px minmax(0,1fr); column-gap:12px; padding:9px 0; border-top:1px solid rgba(255,255,255,.07)">
+            <dt style="color:#8a919b; font-size:13px">{{f.k}}</dt>
+            <dd style="margin:0; font-size:14px; color:{{f.color}}">{{f.v}}</dd>
+          </div>
+        </sc-for>
+      </dl>
+
+      <h3 style="margin:26px 0 12px; font-size:12px; font-weight:500; letter-spacing:.06em; text-transform:uppercase; color:#8a919b">Histórico</h3>
+      <ol style="margin:0; padding:0; list-style:none">
+        <sc-for list="{{d.events}}" as="e" hint-placeholder-count="3">
+          <li style="display:grid; grid-template-columns:9px minmax(0,1fr); column-gap:14px">
+            <span aria-hidden="true" style="display:flex; flex-direction:column; align-items:center; padding-top:6px">
+              <span style="width:9px; height:9px; border-radius:50%; background:#5b626d"></span>
+              <span style="flex:1; width:1px; margin-top:4px; background:{{e.lineBg}}"></span>
+            </span>
+            <span style="padding-bottom:18px">
+              <span style="display:flex; gap:8px; align-items:baseline"><span style="font-weight:500; font-size:14px">{{e.who}}</span><span style="font-size:12.5px; color:#8a919b">{{e.when}}</span></span>
+              <span style="display:block; margin-top:2px; font-size:14px; color:#b6bcc5">{{e.text}}</span>
+            </span>
+          </li>
+        </sc-for>
+      </ol>
+
+      <div style="margin-top:6px; display:flex; flex-direction:column; gap:12px">
+        <textarea aria-label="Responder ao solicitante" rows="3" placeholder="Escreva uma resposta para o solicitante" style="width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:#eceef1; font:inherit; resize:vertical"></textarea>
+        <div style="display:flex; flex-wrap:wrap; gap:10px">
+          <button type="button" style="height:44px; padding:0 18px; border:0; border-radius:12px; background:{{accent}}; color:#0b1220; font:inherit; font-weight:600; cursor:pointer">Enviar resposta</button>
+          <button type="button" style="height:44px; padding:0 18px; border-radius:12px; border:1px solid rgba(255,255,255,.18); background:transparent; color:#eceef1; font:inherit; font-weight:500; cursor:pointer">Resolver chamado</button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#8ab4ff","options":["#8ab4ff","#b9a7ff","#7fd1ae"]},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = Object.assign({ sel: 'NP-1042', filter: 'todos', q: '' }, this.state || {});
+    const accent = this.props.accent ?? '#8ab4ff';
+    const me = 'Samuel R.';
+
+    const T = [
+      { id: 'NP-1042', title: 'VPN não conecta após atualização do cliente', who: 'Marina Costa', area: 'Financeiro', prio: 'Urgente', status: 'andamento', owner: 'Samuel R.', opened: 'Hoje, 08:12', rem: 38, total: 240,
+        ev: [['Marina Costa', '08:12', 'Abriu o chamado: depois da atualização de ontem a VPN não conecta e preciso acessar o ERP de casa.'], ['Samuel R.', '08:40', 'Assumiu o chamado.'], ['Samuel R.', '09:05', 'Pediu a versão do cliente VPN e o log de erro.']] },
+      { id: 'NP-1038', title: 'Impressora do 2º andar offline', who: 'Rafael Lima', area: 'Comercial', prio: 'Alta', status: 'aberto', owner: '', opened: 'Hoje, 07:30', rem: -35, total: 480,
+        ev: [['Rafael Lima', '07:30', 'Abriu o chamado: a impressora aparece offline para todo o andar.']] },
+      { id: 'NP-1041', title: 'Acesso à pasta compartilhada do Jurídico', who: 'Helena Prado', area: 'Jurídico', prio: 'Média', status: 'aguardando', owner: 'Samuel R.', opened: 'Ontem, 16:40', rem: 410, total: 960,
+        ev: [['Helena Prado', '16:40', 'Abriu o chamado pedindo acesso de leitura à pasta de contratos.'], ['Samuel R.', '17:10', 'Pediu a aprovação do gestor da área antes de liberar.']] },
+      { id: 'NP-1039', title: 'E-mail não sincroniza no celular', who: 'Tiago Alves', area: 'Logística', prio: 'Média', status: 'andamento', owner: 'Bruna T.', opened: 'Ontem, 15:05', rem: 190, total: 960,
+        ev: [['Tiago Alves', '15:05', 'Abriu o chamado: o e-mail parou de sincronizar desde a troca de senha.'], ['Bruna T.', '15:50', 'Assumiu o chamado e pediu para remover e adicionar a conta de novo.']] },
+      { id: 'NP-1035', title: 'Solicitação de novo notebook', who: 'Camila Rocha', area: 'RH', prio: 'Baixa', status: 'aberto', owner: '', opened: 'Segunda, 10:20', rem: 2650, total: 4320,
+        ev: [['Camila Rocha', '10:20', 'Abriu o chamado pedindo um notebook para a nova contratação do setor.']] },
+      { id: 'NP-1033', title: 'Erro ao emitir relatório no ERP', who: 'Diego Nunes', area: 'Financeiro', prio: 'Alta', status: 'andamento', owner: 'Samuel R.', opened: 'Hoje, 06:55', rem: 95, total: 480,
+        ev: [['Diego Nunes', '06:55', 'Abriu o chamado: o relatório mensal fecha com erro ao exportar.'], ['Samuel R.', '07:20', 'Assumiu o chamado e reproduziu o erro.']] },
+      { id: 'NP-1030', title: 'Redefinir senha do Wi-Fi corporativo', who: 'Paula Meireles', area: 'Atendimento', prio: 'Baixa', status: 'resolvido', owner: 'Bruna T.', opened: 'Ontem, 09:10', rem: 0, total: 4320,
+        ev: [['Paula Meireles', '09:10', 'Abriu o chamado pedindo a nova senha do Wi-Fi.'], ['Bruna T.', '11:00', 'Resolveu o chamado e enviou a nova senha por e-mail.']] }
+    ];
+
+    const ST = {
+      aberto: { label: 'Aberto', bg: 'transparent', bd: '#b6bcc5' },
+      andamento: { label: 'Em andamento', bg: '#8ab4ff', bd: '#8ab4ff' },
+      aguardando: { label: 'Aguardando', bg: '#c9a3ff', bd: '#c9a3ff' },
+      resolvido: { label: 'Resolvido', bg: '#7fd1ae', bd: '#7fd1ae' }
+    };
+    const PR = { 'Urgente': '#ff8a80', 'Alta': '#eceef1', 'Média': '#b6bcc5', 'Baixa': '#8a919b' };
+
+    const fmt = (m) => {
+      const h = Math.floor(m / 60), mm = m % 60;
+      if (h >= 24) { const d = Math.floor(h / 24), hh = h % 24; return d + 'd' + (hh ? ' ' + hh + 'h' : ''); }
+      if (h >= 1) return h + 'h' + (mm ? ' ' + String(mm).padStart(2, '0') + 'min' : '');
+      return mm + 'min';
+    };
+    const sla = (t) => {
+      if (t.status === 'resolvido') return { lvl: 'done', label: 'Cumprido', color: '#8a919b', bar: 100 };
+      const used = Math.min(1, Math.max(0, 1 - t.rem / t.total));
+      if (t.rem < 0) return { lvl: 'breach', label: 'Estourado há ' + fmt(-t.rem), color: '#ff8a80', bar: 100 };
+      if (t.rem < t.total * 0.25) return { lvl: 'warn', label: fmt(t.rem), color: '#f0b66a', bar: Math.round(used * 100) };
+      return { lvl: 'ok', label: fmt(t.rem), color: '#7fd1ae', bar: Math.round(used * 100) };
+    };
+
+    const open = T.filter((t) => t.status !== 'resolvido');
+    const risk = T.filter((t) => { const l = sla(t).lvl; return l === 'warn' || l === 'breach'; });
+    const breached = T.filter((t) => sla(t).lvl === 'breach');
+    const mine = T.filter((t) => t.owner === me);
+    const summary = open.length + ' em aberto · ' + risk.length + ' com prazo em risco · ' + breached.length + ' estourado';
+
+    const q = s.q.trim().toLowerCase();
+    const byQ = (t) => !q || (t.title + ' ' + t.id + ' ' + t.who + ' ' + t.area).toLowerCase().indexOf(q) >= 0;
+    const byF = (t) => s.filter === 'todos' ? true : s.filter === 'meus' ? t.owner === me : risk.indexOf(t) >= 0;
+    const shown = T.filter((t) => byQ(t) && byF(t));
+    const cur = T.find((t) => t.id === s.sel) || shown[0] || T[0];
+
+    const rows = shown.map((t) => {
+      const c = sla(t), st = ST[t.status], on = t.id === cur.id;
+      return {
+        title: t.title, prio: t.prio, prioColor: PR[t.prio],
+        sub: t.id + ' · ' + t.who + ' · ' + t.area,
+        statusLabel: st.label, dotBg: st.bg, dotBorder: st.bd,
+        slaLabel: c.label, slaColor: c.color, barW: c.bar + '%',
+        bg: on ? 'rgba(255,255,255,.075)' : 'transparent', weight: on ? 600 : 500,
+        selected: on, pick: () => this.setState({ sel: t.id })
+      };
+    });
+
+    const tabDefs = [['todos', 'Todos', T.length], ['meus', 'Meus', mine.length], ['risco', 'Prazo em risco', risk.length]];
+    const tabs = tabDefs.map((x) => ({
+      label: x[1], count: x[2], active: s.filter === x[0],
+      color: s.filter === x[0] ? '#ffffff' : '#b6bcc5',
+      border: s.filter === x[0] ? accent : 'transparent',
+      pick: () => this.setState({ filter: x[0] })
+    }));
+
+    const cc = sla(cur), cs = ST[cur.status];
+    const d = {
+      id: cur.id, title: cur.title, statusLabel: cs.label, dotBg: cs.bg, dotBorder: cs.bd,
+      fields: [
+        { k: 'Solicitante', v: cur.who, color: '#eceef1' },
+        { k: 'Setor', v: cur.area, color: '#eceef1' },
+        { k: 'Responsável', v: cur.owner || 'Sem responsável', color: cur.owner ? '#eceef1' : '#8a919b' },
+        { k: 'Prioridade', v: cur.prio, color: PR[cur.prio] },
+        { k: 'Aberto em', v: cur.opened, color: '#eceef1' },
+        { k: 'Prazo (SLA)', v: cc.label, color: cc.color }
+      ],
+      events: cur.ev.map((e, i) => ({ who: e[0], when: e[1], text: e[2], lineBg: i === cur.ev.length - 1 ? 'transparent' : 'rgba(255,255,255,.14)' }))
+    };
+
+    return {
+      accent, summary, rows, tabs, d,
+      openCount: open.length,
+      hasNone: rows.length === 0,
+      onSearch: (e) => this.setState({ q: e.target.value })
+    };
+  }
+}
+</script>
+</body>
+</html>

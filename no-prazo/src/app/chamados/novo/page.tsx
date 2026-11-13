@@ -23,16 +23,16 @@ export default async function NovoChamadoPage() {
   }
 
   return (
-    <div className="page-shell form-shell">
-      <header className="page-header">
+    <div className="content-page form-shell">
+      <header className="content-heading">
         <div>
-          <p className="eyebrow">NoPrazo</p>
           <h1>Novo chamado</h1>
+          <p>Conte o que aconteceu para encaminharmos sua solicitação.</p>
         </div>
-        <Link href="/home" className="secondary-button">Voltar</Link>
+        <Link href="/home" className="outline-button">Voltar à fila</Link>
       </header>
 
-      <section className="panel form-panel">
+      <section className="glass-panel form-panel">
         <NovoChamadoForm
           usuarios={usuarios}
           categorias={categorias}

@@ -153,7 +153,7 @@ export function NovoChamadoForm({ usuarios, categorias, loadError }: NovoChamado
         <Link href="/home" className="secondary-button">
           Cancelar
         </Link>
-        <button type="submit" className="primary-button" disabled={submitting || !canSubmit}>
+        <button type="submit" className="accent-button" disabled={submitting || !canSubmit}>
           {submitting ? "Salvando..." : "Salvar chamado"}
         </button>
       </div>

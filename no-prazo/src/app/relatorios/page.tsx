@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { BrandPlaceholder, BrandWordmark } from "@/components/BrandPlaceholder";
 import { StatusMessage } from "@/components/feedback/StatusMessage";
 import { loadDashboardData } from "@/lib/api";
 
@@ -23,30 +22,29 @@ export default async function RelatoriosPage() {
   }, {});
 
   return (
-    <div className="page-shell">
-      <header className="page-header">
-        <div className="page-header-copy">
-          <BrandWordmark compact />
+    <div className="content-page">
+      <header className="content-heading">
+        <div>
           <h1>Relatórios</h1>
+          <p>Indicadores de atendimento e cumprimento dos prazos.</p>
         </div>
-        <BrandPlaceholder label="Logo da empresa" size="sm" variant="soft" />
       </header>
 
       {error ? (
         <StatusMessage tone="error" title="Relatórios indisponíveis" description={error} />
       ) : null}
 
-      <section className="metrics-grid compact-grid">
+      <section className="report-metrics">
         {charts.map((item) => (
-          <article key={item.label} className="metric-card">
+          <article key={item.label} className="report-metric">
             <span className="metric-label">{item.label}</span>
             <strong>{item.value}</strong>
           </article>
         ))}
       </section>
 
-      <section className="panel chart-panel">
-        <div className="panel-header-row">
+      <section className="glass-panel chart-panel">
+        <div className="content-heading panel-heading">
           <div>
             <h2>Volume de tickets</h2>
             <p>Indicadores de desempenho por categoria e prazo.</p>
