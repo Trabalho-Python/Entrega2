@@ -21,4 +21,9 @@ class Usuario(Base):
     email = Column(String, nullable=False, unique=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    chamados = relationship("Chamado", back_populates="usuario")
+    chamados = relationship(
+        "Chamado", back_populates="usuario", foreign_keys="Chamado.usuario_id"
+    )
+    chamados_resolvidos = relationship(
+        "Chamado", back_populates="resolvedor", foreign_keys="Chamado.resolvedor_id"
+    )

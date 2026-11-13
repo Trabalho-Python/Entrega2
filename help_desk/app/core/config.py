@@ -21,12 +21,7 @@ if DATABASE_URL.startswith("postgresql://"):
 elif DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
 
-_DEFAULT_CORS = "http://localhost:3000,http://127.0.0.1:3000"
-CORS_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv("CORS_ORIGINS", _DEFAULT_CORS).split(",")
-    if origin.strip()
-]
+SLA_API_KEY = os.getenv("SLA_API_KEY")
 
 
 def _positive_int(name: str, default: int, *, allow_zero: bool = False) -> int:

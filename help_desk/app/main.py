@@ -1,25 +1,12 @@
 from app import models  # noqa: F401
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.core.config import CORS_ORIGINS
 from app.core.database import engine
-from app.routers import categorias, chamados, sla, usuarios
+from app.routers import sla
 
-app = FastAPI(title="No Prazo - Serviço SLA")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
-    allow_methods=["GET", "POST"],
-    allow_headers=["Accept", "Content-Type"],
-)
-
-app.include_router(chamados.router)
-app.include_router(categorias.router)
-app.include_router(usuarios.router)
+app = FastAPI(title="NoPrazo - Serviço de SLA", docs_url=None, redoc_url=None, openapi_url=None)
 app.include_router(sla.router)
 
 
