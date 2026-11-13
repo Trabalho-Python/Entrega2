@@ -1,19 +1,12 @@
-Comando para iniciar o projeto
+INICIALIZAÇÃO DO NOPRAZO
 
-Backend
+Siga o README.md da raiz para configurar Supabase Auth/Postgres, aplicar a migration com RLS, preparar as variáveis de ambiente e iniciar o Next.js e o serviço FastAPI de SLA.
 
-python -m venv venv
-source venv/bin/activate        # Linux/Mac
-venv\Scripts\activate           # Windows
+Resumo:
 
-pip install fastapi uvicorn sqlalchemy psycopg2-binary python-dotenv alembic
-pip freeze > requirements.txt
+1. Configure o projeto Supabase, habilite Google OAuth, aplique `no-prazo/supabase/migrations/20261113000000_initial.sql` e atribua `app_metadata.role` aos usuários.
+2. Configure `help_desk/.env` com DATABASE_URL do Supabase e SLA_API_KEY.
+3. Configure `no-prazo/.env.local` com Supabase URL/chave pública, API_INTERNAL_URL e a mesma SLA_API_KEY.
+4. Inicie o backend na porta 8000 e o Next na porta 3000.
 
-uvicorn app.main:app --reload
-
-
-FrontEnd
-cd no-prazo
-npm install @supabase/supabase-js @supabase/ssr
-npm run dev
-
+Não coloque a chave service_role ou a SLA_API_KEY em variáveis NEXT_PUBLIC_ nem no repositório.

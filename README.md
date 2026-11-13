@@ -1,108 +1,97 @@
 # NoPrazo
 
-Sistema de chamados e acompanhamento de SLA, composto por um frontend Next.js e uma API FastAPI.
+Sistema de abertura e acompanhamento de chamados de suporte, com controle de SLA e histórico.
 
-## Estrutura
+Este README descreve as decisões atuais de implementação. A documentação acadêmica DOCX em `Documentacoes/` antecede a separação de papéis e as policies RLS; não use os trechos antigos que tratam permissões como fora de escopo para configurar o sistema atual.
 
-- `no-prazo/`: aplicação web Next.js.
-- `help_desk/`: API FastAPI, modelos SQLAlchemy e conexão com PostgreSQL.
-- `Documentacoes/`: documentação e instruções adicionais do projeto.
+## Arquitetura
 
-## Pré-requisitos
+- `no-prazo/`: Next.js App Router. Supabase Auth para OAuth; o Next acessa o Postgres diretamente para CRUD.
+- `no-prazo/supabase/migrations/`: schema versionado, constraints, histórico, pausa de SLA e policies RLS.
+- `help_desk/`: FastAPI + SQLAlchemy isolado para cálculo de SLA. O endpoint interno exige `X-SLA-API-Key`; não oferece CRUD de chamados.
+- Solicitantes usam `/NoPrazo/chamados/novo` e `/NoPrazo/meus-chamados`; resolvedores usam `/NoPrazo/home` e `/NoPrazo/prazos`.
 
-- Node.js e npm compatíveis com Next.js 16.
-- Python 3 e pip.
-- Banco PostgreSQL acessível pelo backend. A aplicação não cria automaticamente o banco nem popula os dados iniciais.
+Não há formulário próprio de senha: `/auth/login` inicia o provedor OAuth configurado no Supabase. O papel confiável fica em `app_metadata.role` (`solicitante` ou `resolvedor`) e deve ser atribuído por um administrador, nunca por metadados editáveis pelo próprio usuário.
 
-## 1. Configurar o banco de dados
+## Premissas de negócio adotadas
 
-O backend precisa de uma URL de conexão PostgreSQL. As tabelas e os registros necessários devem existir antes de iniciar o fluxo de chamados. O modelo de usuário referencia `auth.users`; se estiver usando Supabase, configure o projeto e os usuários/categorias de acordo com o schema usado pela aplicação.
+- O SLA é de horas corridas: 6h para alta, 12h para média e 24h para baixa.
+- O relógio pausa somente no estado `aguardando` e retoma quando o resolvedor volta para `em_andamento`.
+- O fluxo permitido é `aberto → em_andamento → aguardando/resolvido → em_andamento/resolvido → fechado`, com a trigger impedindo saltos inválidos.
+- OAuth Google é o provedor padrão por não haver tela customizada de login; outro provedor pode ser definido em `SUPABASE_AUTH_PROVIDER` e habilitado no Dashboard.
 
-## 2. Configurar e iniciar o backend
+## Configurar Supabase
 
-Abra um terminal na raiz do projeto e execute:
+1. Configure um projeto Supabase e aplique `no-prazo/supabase/migrations/20261113000000_initial.sql` pelo SQL Editor ou por Supabase CLI.
+2. Habilite o provedor OAuth definido em `SUPABASE_AUTH_PROVIDER` (padrão Google) e cadastre a URL de callback `http://localhost:3000/NoPrazo/auth/callback`. Para produção, cadastre a URL HTTPS equivalente.
+3. Atribua `app_metadata.role` a cada usuário usando a Supabase Admin API em ambiente administrativo confiável: `solicitante` ou `resolvedor`. Nunca exponha a chave `service_role` no Next/browser.
+4. Cadastre categorias em `public.categorias` antes de abrir chamados.
 
-```bash
-cd help_desk
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-```
+A migration cria automaticamente o perfil em `public.usuarios` no cadastro Auth. O banco ativo não foi acessível durante esta implementação; aplique a migration em uma cópia/ambiente de teste e compare o schema existente antes de produção.
 
-Edite `help_desk/.env` e informe os dados reais da conexão. Exemplo de formato:
+## Variáveis de ambiente
 
-```env
-DATABASE_URL=postgresql://USUARIO:SENHA@HOST:5432/NOME_DO_BANCO
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
-DB_POOL_SIZE=5
-DB_MAX_OVERFLOW=2
-DB_POOL_TIMEOUT=10
-DB_POOL_RECYCLE=1800
-DB_CONNECT_TIMEOUT=10
-```
+Copie `help_desk/.env.example` para `help_desk/.env` e `no-prazo/.env.local.example` para `no-prazo/.env.local`. Preencha os valores localmente; os exemplos não contêm credenciais reais.
 
-Não compartilhe nem versione o arquivo `.env`. Com a configuração pronta, inicie a API:
+**Frontend (`no-prazo/.env.local`)**
 
-```bash
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-```
+- `NEXT_PUBLIC_SUPABASE_URL`: URL do projeto.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: chave anon/publishable; nunca use `service_role`.
+- `NEXT_PUBLIC_BASE_PATH`: `/NoPrazo`, igual ao `basePath` em `next.config.ts`.
+- `SUPABASE_AUTH_PROVIDER`: provedor OAuth habilitado no projeto (padrão `google`).
+- `API_INTERNAL_URL`: URL privada do FastAPI, padrão `http://127.0.0.1:8000`.
+- `SLA_API_KEY`: segredo server-to-server, idêntico ao valor no ambiente do FastAPI. Gere um segredo aleatório e não o envie ao navegador.
 
-O backend adapta essa URL para o driver `psycopg2` listado em `requirements.txt`.
+**Backend (`help_desk/.env`)**
 
-Para Supabase em produção, prefira a connection string do **pooler** compatível
-com a forma de execução da API e mantenha SSL habilitado (`sslmode=require` na
-URL quando necessário). Codifique caracteres especiais da senha na URL. O pool
-é mantido por processo: o máximo de conexões da aplicação é
-`(DB_POOL_SIZE + DB_MAX_OVERFLOW) × número de processos`; ajuste os valores ao
-limite do projeto Supabase e à quantidade de workers. Os padrões acima permitem
-até 7 conexões por processo, fazem ping antes de reutilizar conexões e limitam
-esperas e conexões lentas.
+- `DATABASE_URL`: conexão PostgreSQL do Supabase, com SSL conforme as instruções do projeto (normalmente `sslmode=require`).
+- `SLA_API_KEY`: o mesmo segredo privado configurado no Next.
+- `DB_POOL_SIZE`, `DB_MAX_OVERFLOW`, `DB_POOL_TIMEOUT`, `DB_POOL_RECYCLE`, `DB_CONNECT_TIMEOUT`: limites do pool PostgreSQL.
 
-Confira se o backend está ativo abrindo `http://127.0.0.1:8000/health` — a resposta esperada é `{"status":"ok"}`. A documentação interativa dos endpoints fica em `http://127.0.0.1:8000/docs`.
-O endpoint `/readyz` também verifica a conexão com o banco e retorna HTTP 503
-quando o PostgreSQL não está acessível.
+O FastAPI não aceita operações CRUD; somente a chamada server-side de cálculo SLA usa `SLA_API_KEY`. `/health` não consulta o banco; `/readyz` testa a conexão PostgreSQL.
 
-## 3. Configurar e iniciar o frontend
+## Executar localmente
 
-Em outro terminal, a partir da raiz do projeto:
+1. Configure as variáveis e aplique a migration.
+2. Inicie o FastAPI, a partir de `help_desk/`:
 
-```bash
-cd no-prazo
-cp .env.local.example .env.local
-npm install
-npm run dev
-```
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements-dev.txt
+   uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+   ```
 
-O exemplo define `API_INTERNAL_URL=http://127.0.0.1:8000` para chamadas do servidor Next e `NEXT_PUBLIC_API_BASE_URL=/NoPrazo/api/help-desk` para o navegador. O Next encaminha as chamadas do navegador ao backend pelo proxy configurado; assim, o fluxo local não depende de chamadas cross-origin diretas.
+3. Em outro terminal, inicie o Next:
 
-Abra **http://localhost:3000/NoPrazo**.
+   ```bash
+   cd no-prazo
+   npm ci
+   npm run dev
+   ```
 
-## Fluxo principal para testar
+4. Acesse `http://localhost:3000/NoPrazo`. O primeiro acesso redireciona ao provedor OAuth; após autenticar, a aplicação envia cada papel à sua área.
 
-1. Confirme que o endpoint `/health` do backend responde com status `ok`.
-2. Abra o painel em `http://localhost:3000/NoPrazo`.
-3. Acesse **Novo chamado**.
-4. Selecione um solicitante e uma categoria cadastrados no banco.
-5. Preencha título, descrição e prioridade; envie o formulário.
-6. A criação deve retornar HTTP 201 e o chamado deve aparecer na fila de chamados abertos.
+Se aparecer erro de conexão PostgreSQL, confira `/readyz` e `DATABASE_URL`. `localhost:5432` só funciona quando um PostgreSQL local está rodando; para a arquitetura do projeto, configure o endpoint Postgres do Supabase. Se a porta 3000 estiver ocupada, encerre o servidor Next anterior antes de iniciar outro.
 
-A API oferece `GET /health`, `GET /chamados`, `GET /chamados/resumo`, `GET /categorias`, `GET /usuarios` e `POST /chamados`. Consulte `/docs` para detalhes dos contratos.
+## Verificações
 
-## Verificações do frontend
-
-Execute a partir de `no-prazo/`:
+Frontend, em `no-prazo/`:
 
 ```bash
 npm run lint
+npm test
 npx tsc --noEmit
 npm run build
 ```
 
-## Solução de problemas
+Backend, em `help_desk/` com o ambiente virtual ativo:
 
-- **Erro de conexão ou dados vazios:** confirme que o backend está ativo, que `API_INTERNAL_URL` aponta para ele e que o `.env` do backend contém a `DATABASE_URL` correta.
-- **Erro ao carregar solicitantes/categorias:** confira se as tabelas esperadas existem e contêm registros.
-- **Erro ao criar chamado (404):** o solicitante ou a categoria selecionada pode não existir no banco.
-- **Problemas de CORS ao acessar a API diretamente:** inclua a origem do frontend em `CORS_ORIGINS`. No uso normal descrito acima, o frontend passa pelo proxy do Next.
-- **Mudou o `basePath` ou a porta do backend:** atualize `NEXT_PUBLIC_API_BASE_URL`/`API_INTERNAL_URL` e a configuração do proxy no `no-prazo/next.config.ts`; reinicie o servidor Next após mudar as variáveis.
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+Os testes unitários de SLA cobrem prioridades, UTC, virada de dia, pausas e autenticação por chave. A validação ponta a ponta e as policies RLS ainda exigem um projeto Supabase de teste configurado.
+
+O arquivo `no-prazo/supabase/tests/rls.test.sql` verifica que RLS e as policies esperadas estão instaladas; execute-o em uma base Supabase de teste com pgTAP disponível após aplicar a migration. Não foi possível executar esse teste nem validar OAuth/RLS de ponta a ponta sem credenciais e banco Supabase acessíveis.

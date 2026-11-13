@@ -1,132 +1,25 @@
-Trees Projeto Java
+ESTRUTURA ATUAL — NOPRAZO
 
-FrontEnd
+no-prazo/                         Next.js App Router, autenticação e CRUD Supabase
+├── src/app/
+│   ├── auth/                      OAuth callback, logout e páginas de erro
+│   ├── chamados/novo/             abertura do solicitante
+│   ├── meus-chamados/             lista, histórico e resposta do solicitante
+│   ├── home/                      fila do resolvedor
+│   └── prazos/                    painel de SLA do resolvedor
+├── src/app/actions/tickets.ts     Server Actions Supabase para abrir, responder, assumir e alterar status
+├── src/lib/supabase/              cliente SSR e tipos do banco
+├── src/lib/repositories/          consultas Supabase
+├── src/proxy.ts                   atualização de sessão Supabase
+└── supabase/
+    ├── migrations/                schema, constraints, triggers e policies RLS
+    └── tests/                     verificações pgTAP das policies
 
-no-prazo/
-├── .env.local.example
-├── .eslintrc.json
-├── .gitignore
-├── next.config.js
-├── package.json
-├── tsconfig.json
-├── public/
-│   └── favicon.ico
-└── src/
-    ├── app/
-    │   ├── (auth)/
-    │   │   ├── login/
-    │   │   │   └── page.tsx
-    │   │   └── layout.tsx
-    │   ├── (abertura)/
-    │   │   ├── chamados/
-    │   │   │   ├── novo/
-    │   │   │   │   └── page.tsx
-    │   │   │   ├── [id]/
-    │   │   │   │   └── page.tsx
-    │   │   │   └── page.tsx
-    │   │   └── layout.tsx
-    │   ├── (atendimento)/
-    │   │   ├── chamados/
-    │   │   │   ├── [id]/
-    │   │   │   │   └── page.tsx
-    │   │   │   └── page.tsx
-    │   │   ├── relatorios/
-    │   │   │   └── page.tsx
-    │   │   └── layout.tsx
-    │   ├── api/
-    │   │   └── health/
-    │   │       └── route.ts
-    │   ├── layout.tsx
-    │   └── globals.css
-    ├── components/
-    │   ├── chamados/
-    │   │   ├── ChamadoForm.tsx
-    │   │   ├── ChamadoCard.tsx
-    │   │   ├── ChamadoList.tsx
-    │   │   ├── StatusBadge.tsx
-    │   │   ├── PrioridadeBadge.tsx
-    │   │   ├── SlaAlertBadge.tsx
-    │   │   ├── HistoricoTimeline.tsx
-    │   │   └── FiltroStatus.tsx
-    │   ├── categorias/
-    │   │   └── CategoriaSelect.tsx
-    │   ├── auth/
-    │   │   ├── LoginForm.tsx
-    │   │   └── LogoutButton.tsx
-    │   └── ui/
-    │       ├── Button.tsx
-    │       ├── Input.tsx
-    │       ├── Select.tsx
-    │       ├── Modal.tsx
-    │       └── Table.tsx
-    ├── lib/
-    │   ├── supabase/
-    │   │   ├── client.ts
-    │   │   ├── server.ts
-    │   │   └── middleware.ts
-    │   ├── sla-service/
-    │   │   └── client.ts
-    │   ├── repositories/
-    │   │   ├── chamados.repository.ts
-    │   │   ├── categorias.repository.ts
-    │   │   ├── usuarios.repository.ts
-    │   │   └── historico.repository.ts
-    │   ├── validators/
-    │   │   └── chamado.schema.ts
-    │   ├── types.ts
-    │   └── utils.ts
-    ├── hooks/
-    │   ├── useChamados.ts
-    │   ├── useChamado.ts
-    │   ├── useAuth.ts
-    │   └── useHistorico.ts
-    ├── context/
-    │   └── AuthContext.tsx
-    └── middleware.ts
+help_desk/                         FastAPI isolado para SLA
+├── app/models/                    modelos SQLAlchemy
+├── app/repositories/              leitura e persistência do prazo
+├── app/routers/sla.py             endpoint interno protegido por SLA_API_KEY
+├── app/services/                  cálculo UTC e classificação de SLA
+└── tests/                          testes de SLA, endpoint e mapeadores ORM
 
-
-BackEnd
-no-prazo/
-├── .env.example
-├── .gitignore
-├── requirements.txt
-├── pyproject.toml
-├── alembic.ini
-├── migrations/
-│   ├── env.py
-│   └── versions/
-├── tests/
-│   ├── conftest.py
-│   ├── test_sla_calculator.py
-│   └── test_routers_sla.py
-└── app/
-    ├── __init__.py
-    ├── main.py
-    ├── core/
-    │   ├── __init__.py
-    │   ├── config.py
-    │   ├── database.py #
-    │   └── security.py
-    ├── models/
-    │   ├── __init__.py
-    │   ├── usuario.py
-    │   ├── categoria.py
-    │   ├── chamado.py
-    │   └── historico_interacao.py
-    ├── schemas/
-    │   ├── __init__.py
-    │   ├── chamado.py
-    │   └── sla.py
-    ├── repositories/
-    │   ├── __init__.py
-    │   └── chamado_repository.py
-    ├── services/
-    │   ├── __init__.py
-    │   ├── sla_calculator.py
-    │   └── sla_status.py
-    ├── routers/
-    │   ├── __init__.py
-    │   └── sla.py
-    └── jobs/
-        ├── __init__.py
-        └── verificar_sla_vencido.py
+README.md                          configuração, variáveis, execução e testes
