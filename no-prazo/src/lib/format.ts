@@ -21,6 +21,7 @@ export function statusLabel(status: ChamadoStatus | string) {
   const labels: Record<string, string> = {
     aberto: "Aberto",
     em_andamento: "Em andamento",
+    aguardando: "Aguardando solicitante",
     resolvido: "Resolvido",
     fechado: "Fechado",
   };
@@ -35,6 +36,7 @@ export function formatEta(prazoSla: string | null, vencido: boolean) {
     return "vencido";
   }
   const remaining = new Date(prazoSla).getTime() - Date.now();
+  if (remaining <= 0) return "vencido";
   const hours = Math.floor(remaining / 3_600_000);
   const minutes = Math.floor((remaining % 3_600_000) / 60_000);
   return `${hours}h ${String(Math.max(minutes, 0)).padStart(2, "0")}m`;

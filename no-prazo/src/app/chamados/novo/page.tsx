@@ -2,24 +2,22 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 import { NovoChamadoForm } from "@/components/chamados/NovoChamadoForm";
-import { listCategorias, listUsuarios } from "@/lib/api";
+import { requireRole } from "@/lib/auth";
+import { listCategories } from "@/lib/repositories/tickets";
 
 export default async function NovoChamadoPage() {
+  await requireRole("solicitante");
   let loadError: string | null = null;
-  let usuarios = [] as Awaited<ReturnType<typeof listUsuarios>>;
-  let categorias = [] as Awaited<ReturnType<typeof listCategorias>>;
+  let categorias = [] as Awaited<ReturnType<typeof listCategories>>;
 
   try {
-    [usuarios, categorias] = await Promise.all([listUsuarios(), listCategorias()]);
-    if (!usuarios.length || !categorias.length) {
-      loadError =
-        "Cadastre ao menos um usuário e uma categoria no banco antes de abrir chamados.";
-    }
+    categorias = await listCategories();
+    if (!categorias.length) loadError = "Ainda não há categorias cadastradas para abrir um chamado.";
   } catch (error) {
     loadError =
       error instanceof Error
         ? error.message
-        : "Não foi possível carregar usuários e categorias da API.";
+        : "Não foi possível carregar categorias do Supabase.";
   }
 
   return (
@@ -34,7 +32,6 @@ export default async function NovoChamadoPage() {
 
       <section className="glass-panel form-panel">
         <NovoChamadoForm
-          usuarios={usuarios}
           categorias={categorias}
           loadError={loadError}
         />

@@ -113,6 +113,7 @@ img { display: block; max-width: 100%; }
 .queue-status { display: flex; align-items: center; gap: 8px; color: var(--secondary); font-size: 13px; white-space: nowrap; }
 .status-dot { width: 9px; height: 9px; flex: 0 0 auto; border: 1.5px solid var(--secondary); border-radius: 50%; background: transparent; }
 .status-dot.progress { border-color: var(--accent); background: var(--accent); }
+.status-dot.aguardando { border-color: var(--purple); background: var(--purple); }
 .status-dot.resolvido { border-color: var(--success); background: var(--success); }
 .status-dot.fechado { border-color: var(--muted); background: var(--muted); }
 .queue-deadline { display: flex; flex-direction: column; gap: 6px; }
@@ -150,6 +151,13 @@ img { display: block; max-width: 100%; }
 .outline-button:hover { background: rgba(255, 255, 255, 0.06); }
 
 .content-page { width: 100%; min-width: 0; }
+.public-main { display: grid; min-height: 100vh; place-items: center; padding: 24px; }
+.auth-notice { width: min(460px, 100%); padding: 24px; border: 1px solid var(--line-strong); border-radius: 18px; background: rgba(255, 255, 255, 0.045); }
+.auth-notice h1 { margin: 0; font-size: 23px; font-weight: 600; }
+.auth-notice p { margin: 10px 0 20px; color: var(--secondary); }
+.user-area form { margin: 0; }
+.status-message.success { border-color: rgba(127, 209, 174, 0.35); color: var(--success); }
+.status-message a { margin-left: 8px; text-decoration: underline; text-underline-offset: 3px; }
 .content-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; padding-bottom: 20px; }
 .glass-panel { padding: 20px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 20px; background: var(--glass); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 20px 50px rgba(0, 0, 0, 0.18); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); }
 .panel-heading { align-items: flex-start; padding-bottom: 16px; }
@@ -169,6 +177,35 @@ img { display: block; max-width: 100%; }
 .ticket-side .eta { color: var(--success); font-size: 13px; font-weight: 400; white-space: nowrap; }
 .ticket-side .eta.overdue { color: var(--danger); }
 .text-muted { color: var(--muted); font-size: 13px; }
+
+.my-tickets-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr); gap: 24px; }
+.my-ticket-list { min-width: 0; }
+.my-ticket-row { display: grid; width: 100%; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding: 16px 12px; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; cursor: pointer; }
+.my-ticket-row:first-child { border-top: 1px solid var(--line); }
+.my-ticket-row:hover, .my-ticket-row.selected { background: rgba(255, 255, 255, 0.045); }
+.my-ticket-copy { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.my-ticket-copy small { color: var(--muted); font-size: 12px; }
+.my-ticket-copy strong { overflow: hidden; font-size: 14px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.my-ticket-status { display: flex; align-items: center; gap: 7px; color: var(--secondary); font-size: 12px; white-space: nowrap; }
+.my-ticket-sla { grid-column: 2; justify-self: end; font-size: 12px; font-variant-numeric: tabular-nums; }
+.my-ticket-detail { min-width: 0; padding: 10px 0 0 24px; border-left: 1px solid var(--line); }
+.my-ticket-detail h2 { margin: 12px 0 8px; font-size: 20px; font-weight: 600; }
+.sla-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; padding: 14px 0 22px; border-bottom: 1px solid var(--line); }
+.sla-summary p { display: flex; flex-direction: column; gap: 3px; margin: 0; }
+.sla-summary strong { font-size: 24px; font-variant-numeric: tabular-nums; }
+.sla-summary span { color: var(--muted); font-size: 12px; }
+.danger-text { color: var(--danger); }
+.warning-text { color: var(--warning); }
+.success-text { color: var(--success); }
+.sla-list { display: flex; flex-direction: column; }
+.sla-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(130px, 0.38fr) minmax(150px, 0.4fr) auto; align-items: center; gap: 18px; padding: 16px 10px; border-bottom: 1px solid var(--line); }
+.sla-row:hover { background: rgba(255, 255, 255, 0.035); }
+.sla-ticket, .sla-owner, .sla-time { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.sla-ticket > span, .sla-owner > span { color: var(--muted); font-size: 12px; }
+.sla-ticket > strong { overflow: hidden; font-size: 14px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.sla-ticket > small, .sla-time > small { color: var(--muted); font-size: 12px; }
+.sla-owner > strong { font-size: 13px; font-weight: 500; }
+.sla-time > span { font-size: 14px; font-variant-numeric: tabular-nums; }
 
 .form-shell { max-width: 920px; margin: 0 auto; }
 .form-panel { padding: 24px; }
@@ -205,6 +242,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
   .user-area { margin-left: auto; }
   .queue-layout { display: block; }
   .ticket-detail { min-width: 0; margin-top: 20px; padding: 20px 0 0; border-top: 1px solid var(--line); border-left: 0; }
+  .sla-row { grid-template-columns: minmax(0, 1fr) minmax(130px, 0.5fr); }
+  .sla-row > .outline-button { grid-column: 2; justify-self: end; }
 }
 @media (max-width: 700px) {
   .app-content { padding: 10px; }
@@ -229,6 +268,12 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
   .queue-deadline { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 12px; padding-top: 4px; }
   .queue-deadline .sla-track { flex: 1; }
   .ticket-detail { padding-top: 18px; }
+  .my-tickets-layout { grid-template-columns: 1fr; gap: 18px; }
+  .my-ticket-detail { padding: 18px 0 0; border-top: 1px solid var(--line); border-left: 0; }
+  .sla-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .sla-summary strong { font-size: 20px; }
+  .sla-row { grid-template-columns: minmax(0, 1fr); gap: 10px; padding-right: 4px; padding-left: 4px; }
+  .sla-row > .outline-button { grid-column: 1; justify-self: start; }
   .glass-panel { padding: 15px 12px; }
   .ticket-item { grid-template-columns: 1fr; gap: 9px; padding-right: 6px; padding-left: 6px; }
   .ticket-side { flex-wrap: wrap; gap: 10px 16px; }
