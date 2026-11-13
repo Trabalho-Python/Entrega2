@@ -20,6 +20,12 @@ if DATABASE_URL.startswith("postgresql://"):
     )
 elif DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+elif not DATABASE_URL.startswith("postgresql+psycopg2://"):
+    raise ValueError(
+        "DATABASE_URL deve ser uma URI PostgreSQL (postgresql://...). "
+        "A URL HTTPS do projeto Supabase não é a connection string do banco. "
+        "Copie a URI em Supabase Dashboard > Connect/Database e use sslmode=require."
+    )
 
 SLA_API_KEY = os.getenv("SLA_API_KEY")
 
