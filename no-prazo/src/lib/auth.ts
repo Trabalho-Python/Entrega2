@@ -34,7 +34,7 @@ export async function getAuthIdentity(): Promise<AuthIdentity | null> {
 
 export async function requireRole(role: Papel) {
   const identity = await getAuthIdentity();
-  if (!identity) redirect("/auth/login?reason=access");
+  if (!identity) redirect("/login?reason=access");
   if (identity.role !== role) {
     redirect(identity.role === "resolvedor" ? "/home" : "/meus-chamados");
   }
@@ -43,6 +43,6 @@ export async function requireRole(role: Papel) {
 
 export async function requireAnyRole() {
   const identity = await getAuthIdentity();
-  if (!identity) redirect("/auth/login?reason=access");
+  if (!identity) redirect("/login?reason=access");
   return identity;
 }

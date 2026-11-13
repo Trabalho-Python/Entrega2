@@ -5,6 +5,6 @@ export const dynamic = "force-dynamic";
 
 export default async function RootPage() {
   const identity = await getAuthIdentity();
-  if (!identity) redirect("/auth/login");
+  if (!identity) redirect("/login");
   redirect(identity.role === "resolvedor" ? "/home" : "/meus-chamados");
 }

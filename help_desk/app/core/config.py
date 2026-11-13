@@ -11,9 +11,6 @@ if DATABASE_URL is None:
         "DATABASE_URL não foi encontrado. Verifique se o arquivo .env existe e está preenchido."
     )
 
-# SQLAlchemy 2.1 pode selecionar o driver psycopg (v3) para a URL genérica,
-# mas este projeto instala psycopg2-binary. Fixe o driver para manter a URL
-# PostgreSQL padrão do .env compatível com a dependência declarada.
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace(
         "postgresql://", "postgresql+psycopg2://", 1
@@ -38,8 +35,6 @@ def _positive_int(name: str, default: int, *, allow_zero: bool = False) -> int:
     return value
 
 
-# Defaults deliberadamente conservadores: cada processo da API mantém seu
-# próprio pool, então o total máximo é (pool_size + max_overflow) * workers.
 DB_POOL_SIZE = _positive_int("DB_POOL_SIZE", 5)
 DB_MAX_OVERFLOW = _positive_int("DB_MAX_OVERFLOW", 2, allow_zero=True)
 DB_POOL_TIMEOUT = _positive_int("DB_POOL_TIMEOUT", 10)
