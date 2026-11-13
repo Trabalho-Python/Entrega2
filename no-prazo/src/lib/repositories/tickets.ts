@@ -13,6 +13,13 @@ export async function listCategories(): Promise<Categoria[]> {
   return data ?? [];
 }
 
+export async function listResolvers(): Promise<{ id: string; nome: string }[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("list_resolvers");
+  throwOnError(error, "Não foi possível carregar a lista de resolvedores.");
+  return data ?? [];
+}
+
 export async function listTickets(role: Papel, userId: string): Promise<Chamado[]> {
   const supabase = await createSupabaseServerClient();
   let query = supabase.from("chamados").select("*").order("created_at", { ascending: false });

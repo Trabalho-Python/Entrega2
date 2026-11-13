@@ -13,9 +13,11 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
   const error = getMessage(params, "error");
   const message = getMessage(params, "message");
   const reason = getMessage(params, "reason");
+  const devLoginEnabled = process.env.NEXT_PUBLIC_ENABLE_DEV_LOGIN === "true";
 
   let notice = "Acesse sua conta para continuar.";
   if (reason === "access") notice = "Faça login para continuar.";
+  if (devLoginEnabled) notice = "Modo de desenvolvimento ativo. Use um usuário local.";
 
   return (
     <main className="public-main">
@@ -66,11 +68,18 @@ export default async function LoginPage({ searchParams }: { searchParams?: Promi
           </button>
         </form>
 
-        <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          <a href="/auth/login" className="outline-button" style={{ display: "inline-flex", width: "100%", textAlign: "center" }}>
-            Entrar com Google
-          </a>
-        </div>
+        {devLoginEnabled ? (
+          <div style={{ marginTop: 16, padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(126, 140, 255, 0.3)", background: "rgba(126, 140, 255, 0.08)", color: "var(--secondary)" }}>
+            Usuários de teste: <strong>solicitante@noprazo.local</strong> / <strong>solicitante123</strong><br />
+            ou <strong>resolvedor@noprazo.local</strong> / <strong>resolvedor123</strong>
+          </div>
+        ) : (
+          <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+            <a href="/auth/login" className="outline-button" style={{ display: "inline-flex", width: "100%", textAlign: "center" }}>
+              Entrar com Google
+            </a>
+          </div>
+        )}
 
         <p style={{ marginTop: 20, marginBottom: 0, color: "var(--secondary)" }}>
           Ainda não tem conta? <Link href="/cadastro">Crie uma conta</Link>

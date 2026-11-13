@@ -4,6 +4,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "/NoPrazo";
 
 export async function GET(request: NextRequest) {
+  if (process.env.NEXT_PUBLIC_ENABLE_DEV_LOGIN === "true") {
+    return NextResponse.redirect(new URL(`${BASE_PATH}/login`, request.url));
+  }
+
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return NextResponse.redirect(new URL(`${BASE_PATH}/auth/error?reason=config`, request.url));
   }

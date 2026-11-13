@@ -61,7 +61,7 @@ export function MyTickets({ tickets, error }: { tickets: Chamado[]; error: strin
           <p className="text-muted">Aberto em {dateLabel(selected.created_at)} · {selected.resolvedor_nome ? `Responsável: ${selected.resolvedor_nome}` : "Aguardando resolvedor"}</p>
           <h3 className="detail-section-title">Histórico</h3>
           <ol className="ticket-history">
-            {selected.historico.map((event) => <li key={event.id}><i className="history-mark" aria-hidden="true" /><div><p><strong>{event.usuario_nome ?? "Usuário"}</strong><time>{dateLabel(event.data_hora)}</time></p><span>{event.tipo === "status" ? `Status: ${event.descricao}` : event.descricao}</span></div></li>)}
+            {selected.historico.map((event) => <li key={event.id}><i className="history-mark" aria-hidden="true" /><div><p><strong>{event.usuario_nome ?? "Usuário"}</strong><time>{dateLabel(event.data_hora)}</time></p><span>{event.tipo === "status" ? `Status: ${event.descricao}` : event.tipo === "atribuicao" ? `Atribuição: ${event.descricao}` : event.descricao}</span></div></li>)}
           </ol>
           {selected.status !== "resolvido" && selected.status !== "fechado" ? (
             <form className="reply-form" onSubmit={submit}>

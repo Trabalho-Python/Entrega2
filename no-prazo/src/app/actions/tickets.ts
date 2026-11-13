@@ -114,6 +114,25 @@ export async function transitionTicketAction(ticketId: string, nextStatus: Chama
   return { ok: true, warning: warning ?? undefined };
 }
 
+export async function assignTicketAction(ticketId: string, resolverId: string): Promise<TicketActionResult> {
+  await requireRole("resolvedor");
+  if (!UUID_PATTERN.test(ticketId) || !UUID_PATTERN.test(resolverId)) {
+    return { ok: false, error: "Selecione um chamado e um resolvedor válidos." };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("assign_ticket", {
+    p_ticket_id: ticketId,
+    p_resolver_id: resolverId,
+  });
+  if (error) return { ok: false, error: "Não foi possível atribuir o chamado. Verifique se ele continua ativo e se o responsável é um resolvedor." };
+
+  revalidatePath("/home");
+  revalidatePath("/prazos");
+  revalidatePath("/meus-chamados");
+  return { ok: true };
+}
+
 export async function recalculateSlaAction(ticketId: string): Promise<TicketActionResult> {
   await requireRole("resolvedor");
   if (typeof ticketId !== "string" || !UUID_PATTERN.test(ticketId)) return { ok: false, error: "Identificador de chamado inválido." };

@@ -2,12 +2,12 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { addTicketResponseAction, transitionTicketAction, type TicketActionResult } from "@/app/actions/tickets";
+import { addTicketResponseAction, assignTicketAction, transitionTicketAction, type TicketActionResult } from "@/app/actions/tickets";
 import { formatEta, prioridadeLabel, shortTicketId, statusLabel } from "@/lib/format";
 import type { Chamado, ChamadoStatus } from "@/lib/types";
 import { StatusMessage } from "@/components/feedback/StatusMessage";
 
-type QueueBoardProps = { tickets: Chamado[]; error: string | null; currentUserId: string };
+type QueueBoardProps = { tickets: Chamado[]; resolvers: { id: string; nome: string }[]; error: string | null; currentUserId: string };
 type QueueFilter = "todos" | "meus" | "risco";
 type SlaInfo = { label: string; color: string; percent: number; level: "done" | "pending" | "paused" | "breach" | "warn" | "ok" };
 
@@ -37,7 +37,7 @@ function openedLabel(value: string) {
   return Number.isNaN(date.getTime()) ? "Data indisponível" : new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(date);
 }
 
-export function QueueBoard({ tickets, error, currentUserId }: QueueBoardProps) {
+export function QueueBoard({ tickets, resolvers, error, currentUserId }: QueueBoardProps) {
   const router = useRouter();
   const [filter, setFilter] = useState<QueueFilter>("todos");
   const [query, setQuery] = useState("");
@@ -46,6 +46,7 @@ export function QueueBoard({ tickets, error, currentUserId }: QueueBoardProps) {
   const [notice, setNotice] = useState("");
   const [actionError, setActionError] = useState("");
   const [pending, setPending] = useState(false);
+  const [selectedResolverId, setSelectedResolverId] = useState("");
 
   const riskTickets = useMemo(() => tickets.filter((ticket) => {
     const sla = getSla(ticket);
@@ -98,6 +99,26 @@ export function QueueBoard({ tickets, error, currentUserId }: QueueBoardProps) {
     router.refresh();
   }
 
+  async function assignSelectedTicket(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedTicket || pending) return;
+    const resolverId = selectedResolverId || selectedTicket.resolvedor_id || currentUserId;
+    if (!resolvers.some((resolver) => resolver.id === resolverId)) {
+      setActionError("Selecione um resolvedor válido para atribuir o chamado.");
+      return;
+    }
+    setPending(true);
+    setActionError("");
+    const result = await assignTicketAction(selectedTicket.id, resolverId);
+    setPending(false);
+    if (!result.ok) {
+      setActionError(result.error);
+      return;
+    }
+    setNotice("Chamado atribuído ao resolvedor selecionado.");
+    router.refresh();
+  }
+
   const owned = selectedTicket?.resolvedor_id === currentUserId;
 
   return (
@@ -126,7 +147,7 @@ export function QueueBoard({ tickets, error, currentUserId }: QueueBoardProps) {
             const selected = selectedTicket?.id === ticket.id;
             const statusClass = ticket.status === "em_andamento" ? "progress" : ticket.status;
             return (
-              <button key={ticket.id} type="button" className={`queue-row ${selected ? "selected" : ""}`} aria-pressed={selected} onClick={() => { setSelectedId(ticket.id); setNotice(""); setActionError(""); }}>
+              <button key={ticket.id} type="button" className={`queue-row ${selected ? "selected" : ""}`} aria-pressed={selected} onClick={() => { setSelectedId(ticket.id); setSelectedResolverId(""); setNotice(""); setActionError(""); }}>
                 <span className={`queue-priority ${ticket.prioridade}`}>{prioridadeLabel(ticket.prioridade)}</span>
                 <span className="queue-ticket-copy"><strong>{ticket.titulo}</strong><small>{shortTicketId(ticket.id)} · {ticket.usuario_nome} · {ticket.categoria_nome}</small></span>
                 <span className="queue-status"><i className={`status-dot ${statusClass}`} />{statusLabel(ticket.status)}</span>
@@ -153,25 +174,45 @@ export function QueueBoard({ tickets, error, currentUserId }: QueueBoardProps) {
             <h3 className="detail-section-title">Histórico</h3>
             <ol className="ticket-history">
               {selectedTicket.historico.map((event) => (
-                <li key={event.id}><i className="history-mark" aria-hidden="true" /><div><p><strong>{event.usuario_nome ?? "Usuário"}</strong><time>{openedLabel(event.data_hora)}</time></p><span>{event.tipo === "status" ? `Status: ${event.descricao}` : event.descricao}</span></div></li>
+                <li key={event.id}><i className="history-mark" aria-hidden="true" /><div><p><strong>{event.usuario_nome ?? "Usuário"}</strong><time>{openedLabel(event.data_hora)}</time></p><span>{event.tipo === "status" ? `Status: ${event.descricao}` : event.tipo === "atribuicao" ? `Atribuição: ${event.descricao}` : event.descricao}</span></div></li>
               ))}
             </ol>
 
             {actionError ? <p className="status-message error" role="alert">{actionError}</p> : null}
             {notice ? <p className="reply-notice" role="status">{notice}</p> : null}
+            {selectedTicket.status !== "resolvido" && selectedTicket.status !== "fechado" ? (
+              <form className="assignment-form" onSubmit={assignSelectedTicket}>
+                <label htmlFor="ticket-resolver">Atribuir chamado a</label>
+                <div className="assignment-controls">
+                  <select
+                    id="ticket-resolver"
+                    value={selectedResolverId || selectedTicket.resolvedor_id || currentUserId}
+                    onChange={(event) => setSelectedResolverId(event.target.value)}
+                    disabled={pending || resolvers.length === 0}
+                  >
+                    {resolvers.map((resolver) => <option key={resolver.id} value={resolver.id}>{resolver.nome}{resolver.id === currentUserId ? " (você)" : ""}</option>)}
+                  </select>
+                  <button type="submit" className="outline-button" disabled={pending || resolvers.length === 0}>
+                    {pending ? "Salvando..." : "Atribuir"}
+                  </button>
+                </div>
+                {resolvers.length === 0 ? <small>Nenhum resolvedor disponível para atribuição.</small> : null}
+              </form>
+            ) : null}
             {owned && selectedTicket.status !== "fechado" ? (
               <form className="reply-form" onSubmit={submitReply}>
                 <label className="visually-hidden" htmlFor="ticket-reply">Responder ao solicitante</label>
                 <textarea id="ticket-reply" rows={3} maxLength={5000} value={reply} onChange={(event) => setReply(event.target.value)} placeholder="Escreva uma resposta para o solicitante" />
                 <div className="detail-actions">
                   <button type="submit" className="accent-button" disabled={pending || !reply.trim()}>Enviar resposta</button>
+                  {selectedTicket.status === "aberto" ? <button type="button" className="outline-button" disabled={pending} onClick={() => changeStatus("em_andamento")}>Iniciar atendimento</button> : null}
                   {selectedTicket.status === "em_andamento" ? <button type="button" className="outline-button" disabled={pending} onClick={() => changeStatus("aguardando")}>Aguardar solicitante</button> : null}
                   {selectedTicket.status === "aguardando" ? <button type="button" className="outline-button" disabled={pending} onClick={() => changeStatus("em_andamento")}>Retomar atendimento</button> : null}
                   {["em_andamento", "aguardando"].includes(selectedTicket.status) ? <button type="button" className="outline-button" disabled={pending} onClick={() => changeStatus("resolvido")}>Resolver chamado</button> : null}
                   {selectedTicket.status === "resolvido" ? <button type="button" className="outline-button" disabled={pending} onClick={() => changeStatus("fechado")}>Fechar chamado</button> : null}
                 </div>
               </form>
-            ) : selectedTicket.status !== "fechado" ? <p className="text-muted">Assuma este chamado para responder e atualizar o atendimento.</p> : <p className="text-muted">Este chamado foi fechado.</p>}
+            ) : selectedTicket.status !== "fechado" && selectedTicket.status !== "resolvido" ? <p className="text-muted">Apenas o resolvedor atribuído pode responder e atualizar o atendimento.</p> : selectedTicket.status === "resolvido" ? <p className="text-muted">Este chamado foi resolvido.</p> : <p className="text-muted">Este chamado foi fechado.</p>}
           </aside>
         ) : null}
       </div>

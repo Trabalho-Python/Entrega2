@@ -59,7 +59,7 @@ export type Database = {
           chamado_id: string;
           usuario_id: string;
           descricao: string;
-          tipo: "abertura" | "mensagem" | "status";
+          tipo: "abertura" | "mensagem" | "status" | "atribuicao";
           data_hora: string;
         };
         Insert: {
@@ -67,7 +67,7 @@ export type Database = {
           chamado_id: string;
           usuario_id: string;
           descricao: string;
-          tipo?: "abertura" | "mensagem" | "status";
+          tipo?: "abertura" | "mensagem" | "status" | "atribuicao";
           data_hora?: string;
         };
         Update: never;
@@ -75,7 +75,16 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      assign_ticket: {
+        Args: { p_ticket_id: string; p_resolver_id: string };
+        Returns: boolean;
+      };
+      list_resolvers: {
+        Args: Record<string, never>;
+        Returns: { id: string; nome: string }[];
+      };
+    };
     Enums: {
       status_chamado: ChamadoStatus;
       prioridade_chamado: ChamadoPrioridade;

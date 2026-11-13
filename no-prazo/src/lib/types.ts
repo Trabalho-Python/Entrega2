@@ -7,7 +7,7 @@ export type HistoricoInteracao = {
   chamado_id: string;
   usuario_id: string;
   descricao: string;
-  tipo: "abertura" | "mensagem" | "status";
+  tipo: "abertura" | "mensagem" | "status" | "atribuicao";
   data_hora: string;
   usuario_nome?: string;
 };
